@@ -5,7 +5,7 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
-
+  
 jobs:
   build:
 
@@ -19,6 +19,21 @@ jobs:
         dotnet-version: 3.1.106
     - name: Install dependencies
       run: dotnet restore
-    - name: Build
-      run: dotnet build --configuration Release --no-restore
+    - name: Build and Publish
+      run: 
+        dotnet build --configuration Release --no-restore
+        dotnet publish -c Release -o './client'
+    - name: Deploy Azure WebApp
+      uses: Azure/webapps-deploy@v2
+      with:
+        # Publish profile (*.publishsettings) file contents with Web Deploy secrets
+        # publish-profile: # optional
+        # Name of the Azure Web App
+        app-name: twitchmetrics
+        # Path to package or folder. *.zip, *.war, *.jar or a folder to deploy
+        package: './client'
+        publish-profile: ${{env.PUBLISH_PROFILE}}
+      env:
+        PUBLISH_PROFILE: ${{secrets.publish_profile}}
+
 
