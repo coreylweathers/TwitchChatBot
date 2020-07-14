@@ -1,0 +1,31 @@
+﻿@page "/channels"
+
+<h3>Channel Data</h3>
+<AuthorizeView>
+    <NotAuthorized>
+        <p>You are not supposed to see this page. Please login using the Twilio Chat Bot account credentials. Thank you</p>
+    </NotAuthorized>
+    <Authorized>
+        <div class="channels">
+            <div class="buttons">
+                <button class="btn btn-primary" @onclick="StartSubscription">Subscribe to Events</button>
+                <button class="btn btn-primary" @onclick="StopSubscription">Unsubscribe from Events</button>
+            </div>
+            @if (TwitchService.TwitchUsers != null && TwitchService.TwitchUsers.Count > 0)
+            {
+                <div class="row">
+                    @foreach (var user in TwitchService.TwitchUsers.OrderBy(x => x.LoginName))
+                    {
+                        <div class="card" style="width: 18rem;">
+                            <img src=@user.ProfileImageUrl class="card-img-top" alt=@user.LoginName>
+                            <div class="card-body">
+                                <h5 class="card-title"><em>@user.LoginName</em></h5>
+                                <p class="card-text"><i>@user.Description</i></p>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </Authorized>
+</AuthorizeView>
