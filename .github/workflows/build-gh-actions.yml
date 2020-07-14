@@ -20,7 +20,7 @@ jobs:
     - name: Install dependencies
       run: dotnet restore
     - name: Build and Publish
-      run: 
+      run: | 
         dotnet build --configuration Release --no-restore
         dotnet publish -c Release -o './client'
     - name: Deploy Azure WebApp
