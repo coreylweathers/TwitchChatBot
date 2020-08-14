@@ -36,7 +36,7 @@ namespace TwitchChatBot.Client.Services
             _logger = logger;
         }
 
-        public async Task<bool> UpdateFollowerSubscription(List<string> channels, SubscriptionStatus subscriptionStatus)
+        public async Task<bool> UpdateFollowerSubscription(IEnumerable<string> channels, SubscriptionStatus subscriptionStatus)
         {
             _logger.LogFormattedMessage($"Updating the Followers Subscription for the selected channels to {subscriptionStatus}");
             foreach (var channel in channels)
@@ -79,7 +79,7 @@ namespace TwitchChatBot.Client.Services
             return true;
         }
 
-        public async Task<bool> UpdateStreamChangeSubscription(List<string> channels, SubscriptionStatus subscriptionStatus)
+        public async Task<bool> UpdateStreamChangeSubscription(IEnumerable<string> channels, SubscriptionStatus subscriptionStatus)
         {
             _logger.LogFormattedMessage($"Updating the Stream Subscription for the selected channels to {subscriptionStatus}");
             foreach (var channel in channels)

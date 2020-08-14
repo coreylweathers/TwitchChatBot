@@ -7,10 +7,6 @@
     </NotAuthorized>
     <Authorized>
         <div class="channels">
-            <div class="buttons">
-                <button class="btn btn-primary" @onclick="StartSubscription">Subscribe to Events</button>
-                <button class="btn btn-primary" @onclick="StopSubscription">Unsubscribe from Events</button>
-            </div>
             @if (TwitchService.TwitchUsers != null && TwitchService.TwitchUsers.Count > 0)
             {
                 <div class="row">
@@ -22,8 +18,12 @@
                                 <h5 class="card-title"><em>@user.LoginName</em></h5>
                                 <p class="card-text"><i>@user.Description</i></p>
                             </div>
+
                         </div>
                     }
+                    <div class="card" style="width: 18rem;">
+
+                    </div>
                 </div>
             }
         </div>

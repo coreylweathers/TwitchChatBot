@@ -1,8 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.IO;
-using System.Security.Authentication.ExtendedProtection;
 using System.Threading.Tasks;
 
 namespace TwitchChatBot.CLI

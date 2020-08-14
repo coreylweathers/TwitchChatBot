@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace TwitchChatBot.Client.Data
@@ -12,5 +9,9 @@ namespace TwitchChatBot.Client.Data
             : base(options)
         {
         }
+
+        //public ApplicationDbContext()
+        //{
+        //}
     }
 }

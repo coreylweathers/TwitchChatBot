@@ -2,6 +2,9 @@
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using TwitchChatBot.Client.Extensions;
 using TwitchChatBot.Client.Models;
@@ -37,20 +40,21 @@ namespace TwitchChatBot.Client.Pages
             }
         }
 
-        public async Task StartSubscription()
+        public async Task StartSubscription(string channel = null)
         {
             Logger.LogFormattedMessage("Starting Subscription");
-            _followerSubscriptionFlag = await TwitchService.UpdateFollowerSubscription(TwitchOptions.CurrentValue.Channels, SubscriptionStatus.Subscribe);
-           _streamSubscriptionFlag =  await TwitchService.UpdateStreamChangeSubscription(TwitchOptions.CurrentValue.Channels, SubscriptionStatus.Subscribe);
+            IEnumerable<string> channels = string.IsNullOrEmpty(channel) ? TwitchOptions.CurrentValue.Channels.AsEnumerable() : new[] { channel };
+            _followerSubscriptionFlag = await TwitchService.UpdateFollowerSubscription(channels, SubscriptionStatus.Subscribe);
+            _streamSubscriptionFlag = await TwitchService.UpdateStreamChangeSubscription(channels, SubscriptionStatus.Subscribe);
             Logger.LogFormattedMessage($"Started Subscription");
         }
 
-        public async Task StopSubscription()
+        public async Task StopSubscription(string channel = null)
         {
             Logger.LogFormattedMessage("Stopping Subscription");
-
-            await TwitchService.UpdateFollowerSubscription(TwitchOptions.CurrentValue.Channels, SubscriptionStatus.Unsubscribe);
-            await TwitchService.UpdateStreamChangeSubscription(TwitchOptions.CurrentValue.Channels, SubscriptionStatus.Unsubscribe);
+            IEnumerable<string> channels = string.IsNullOrEmpty(channel) ? TwitchOptions.CurrentValue.Channels.AsEnumerable() : new[] { channel };
+            await TwitchService.UpdateFollowerSubscription(channels, SubscriptionStatus.Unsubscribe);
+            await TwitchService.UpdateStreamChangeSubscription(channels, SubscriptionStatus.Unsubscribe);
             Logger.LogFormattedMessage("Stopped Subscription");
         }
     }

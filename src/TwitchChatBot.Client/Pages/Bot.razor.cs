@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System;
 using System.Threading.Tasks;
 using TwitchChatBot.Client.Extensions;
 using TwitchChatBot.Client.Models.Options;
@@ -17,9 +18,15 @@ namespace TwitchChatBot.Client.Pages
         [Inject]
         protected ILogger<Bot> Logger { get; set; }
 
+        protected DateTimeOffset UpdatedPasswordTime { get; set; }
+
+        protected string PasswordText { get; set; }
+
         protected override async Task OnInitializedAsync()
         {
             Logger.LogFormattedMessage("This is when this was created");
+            UpdatedPasswordTime = DateTime.UtcNow;
+
             await Task.CompletedTask;
         }
     }

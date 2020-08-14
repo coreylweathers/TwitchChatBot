@@ -1,3 +1,13 @@
 ﻿@page "/bot"
 
 <h3>Bot</h3>
+
+<div class="bot">
+    <div class="row">
+        <p>Password Last Updated: @UpdatedPasswordTime.ToString("f")</p> 
+    </div>
+    <div class="row">
+        <label for="passwordText">Password: </label>
+        <input id="passwordText" @bind="PasswordText" />
+    </div>
+</div>
