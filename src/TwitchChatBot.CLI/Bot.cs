@@ -64,8 +64,44 @@ namespace TwitchChatBot.CLI
                         break;
                 }
             });
+
+            _hubConnection.On<string>("UpdatePassword", async passwordText =>
+            {
+                await UpdatePassword(passwordText);
+            });
             await _hubConnection.StartAsync().ConfigureAwait(false);
             Console.WriteLine($"{DateTime.UtcNow}: Connected to SignalR hub {uri} - {_hubConnection.ConnectionId}");
+        }
+
+        private async Task UpdatePassword(string password)
+        {
+            Console.WriteLine($"{DateTime.UtcNow.ToString(CultureInfo.InvariantCulture)}: Updating the Twitch bot password");
+            var creds = new ConnectionCredentials(_config[Constants.CONFIG_TWITCH_USERNAME], password);
+
+            try
+            {
+                // IF CONNECTED, DISCONNECT
+                if (_twitchClient.IsConnected)
+                {
+                    Console.WriteLine($"{DateTime.UtcNow.ToString()}: Disconnecting from Twitch");
+                    _twitchClient.Disconnect();
+                    Console.WriteLine($"{DateTime.UtcNow.ToString()}: Disconnected from Twitch");
+                }
+
+                // UPDATE THE CLIENT CREDS
+                _twitchClient.SetConnectionCredentials(creds);
+
+                // RECONNECT TO TWITCH
+                _twitchClient.Reconnect();
+                Console.WriteLine($"{DateTime.UtcNow.ToString(CultureInfo.InvariantCulture)}: Updated the Twitch bot password");
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("An exception occured: {0}", ex.Message);
+            }
+            Console.WriteLine($"{DateTime.UtcNow.ToString(CultureInfo.InvariantCulture)}: Updated the Twitch bot password");
+            await Task.CompletedTask;
         }
 
         private async Task SetupTwitchClient()
