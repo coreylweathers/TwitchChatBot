@@ -13,7 +13,9 @@
                     @foreach (var user in TwitchService.TwitchUsers.OrderBy(x => x.LoginName))
                     {
                         <div class="card" style="width: 18rem;">
-                            <img src=@user.ProfileImageUrl class="card-img-top" alt=@user.LoginName>
+                            <button @onclick="@(() =>OpenChannel(user.LoginName))">
+                                <img src=@user.ProfileImageUrl class="card-img-top" alt=@user.LoginName>
+                            </button>
                             <div class="card-body">
                                 <h5 class="card-title"><em>@user.LoginName</em></h5>
                                 <p class="card-text"><i>@user.Description</i></p>

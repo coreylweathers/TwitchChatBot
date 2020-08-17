@@ -1,0 +1,20 @@
+﻿<EditForm Model="@model" OnValidSubmit="SaveChanges">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <img src=@model.ImageUrl class="rounded" alt=@model.ChannelName>
+    <p>
+        <label>
+            Subscribe to Stream Activity:
+            <InputCheckbox @bind-Value="model.IsStreamSubscribed" />
+        </label>
+    </p>
+    <p>
+        <label>
+            Subscribe to Followers:
+            <InputCheckbox @bind-Value="model.IsFollowerSubscribed" />
+        </label>
+    </p>
+    <button type="submit" class="btn btn-primary">Submit</button>
+    <button class="btn btn-secondary" @onclick="BlazoredModal.Close" >Close</button>
+</EditForm>

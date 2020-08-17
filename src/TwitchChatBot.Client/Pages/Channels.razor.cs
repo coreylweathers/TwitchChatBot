@@ -1,8 +1,9 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using Blazored.Modal;
+using Blazored.Modal.Services;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -24,6 +25,9 @@ namespace TwitchChatBot.Client.Pages
         [Inject]
         protected AuthenticationStateProvider AuthenticationStateProvider { get; set; }
 
+        [CascadingParameter]
+        public IModalService Modal { get; set; }
+
         // TODO: Move the buttons to be on each channel, and then setup a global button handler
         // TODO: Update button enabled state based on channel subscription status
         // TODO: Add subscription date to the screen
@@ -38,6 +42,14 @@ namespace TwitchChatBot.Client.Pages
                 await TwitchService.LoadChannelData(TwitchOptions.CurrentValue.Channels);
                 //await TwitchService.GetCurrentSubscriptions();
             }
+        }
+
+        private void OpenChannel(string channelLogin)
+        {
+            var parameters = new ModalParameters();
+            parameters.Add(nameof(channelLogin), channelLogin);
+
+            Modal.Show<Channel>(channelLogin, parameters);
         }
 
         public async Task StartSubscription(string channel = null)

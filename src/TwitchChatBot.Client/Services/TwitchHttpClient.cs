@@ -51,11 +51,11 @@ namespace TwitchChatBot.Client.Services
             return response.StatusCode;
         }
 
-        public async Task<List<TwitchUser>> GetTwitchChannels(List<string> channels)
+        public async Task<List<TwitchUser>> GetTwitchChannels(List<string> channelLogins)
         {
-            if (channels == null || channels.Count == 0)
+            if (channelLogins == null || channelLogins.Count == 0)
             {
-                await Task.FromException(new ArgumentException("Can't get Twitch channel data: Twitch Channels list is null or empty", nameof(channels)));
+                await Task.FromException(new ArgumentException("Can't get Twitch channel data: Twitch Channels list is null or empty", nameof(channelLogins)));
             }
 
             if (string.IsNullOrEmpty(_twitchOptions.UserUrl))
@@ -65,7 +65,7 @@ namespace TwitchChatBot.Client.Services
 
             var uriBuilder = new UriBuilder(new Uri(_twitchOptions.UserUrl))
             {
-                Query = string.Join("&", channels.Select(c => $"login={c}")).TrimStart('&')
+                Query = string.Join("&", channelLogins.Select(c => $"login={c}")).TrimStart('&')
             };
 
 

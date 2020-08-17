@@ -17,6 +17,7 @@ using Azure.Storage.Queues;
 using Azure.Storage.Blobs;
 using Azure.Core.Extensions;
 using System;
+using Blazored.Modal;
 
 namespace TwitchChatBot.Client
 {
@@ -102,6 +103,7 @@ namespace TwitchChatBot.Client
 
             // Add Telerik blazor
             //services.AddTelerikBlazor();
+            services.AddBlazoredModal();
 
         }
 
