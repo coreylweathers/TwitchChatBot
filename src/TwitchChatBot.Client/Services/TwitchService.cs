@@ -162,5 +162,6 @@ namespace TwitchChatBot.Client.Services
             return Task.CompletedTask;
         }
 
+        // TODO: Create a GetSubscriptionData method from Twitch that can be used on the Channel component
     }
 }

@@ -76,7 +76,17 @@ namespace TwitchChatBot.Client.Services
             var json = JObject.Parse(await response.Content.ReadAsStringAsync());
             return JsonConvert.DeserializeObject<List<TwitchUser>>(json["data"].ToString());
 
+        }
 
+        public async Task GetSubscriptionData(string channel)
+        {
+            // TODO: WRITE THE GETSUBSCRIPTION DATA METHOD FOR THE HTTP CLIENT
+            // Make the request with the Client ID and Bearer Token set in headers
+            // Get the JSON Response array and cache it locally
+            // Using the TwitchUser list, match the userId to the channel login name
+            // Check which topics are subscribed for that user ID if any
+            // Return an enum that is the union of each topic 
+            // PS: Go create that enum
         }
     }
 }

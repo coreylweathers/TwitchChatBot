@@ -32,6 +32,8 @@ namespace TwitchChatBot.Client.Pages
                 ImageUrl = channel.ProfileImageUrl
             };
 
+ 
+            // TODO: Call the TwitchService GetSubscription data for a specific channel and use the results to set the checkboxes for subscribed events correctly
         }
 
         private void SaveChanges()
