@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TwitchChatBot.Client.Models.Options;
 using TwitchChatBot.Client.Models.Twitch;
+using TwitchChatBot.Client.Models.Twitch.Enums;
 
 namespace TwitchChatBot.Client.Services
 {
@@ -27,7 +28,31 @@ namespace TwitchChatBot.Client.Services
             _httpClient.DefaultRequestHeaders.Add("Client-ID", _oauthOptions.ClientId);
         }
 
-        public void SetAccessToken(string accessToken)
+        public async Task<string> GetAppAccessToken(string clientId, string clientSecret, string[] scopes = null)
+        {
+            var uri = "https://id.twitch.tv/oauth2/token";
+            var formData = new Dictionary<string, string>
+            {
+                {"client_id", clientId },
+                {"client_secret", clientSecret },
+                {"grant_type","client_credentials" }
+            };
+            if (scopes != null)
+            {
+                formData.Add("scopes", string.Join(' ', scopes));
+            }
+            var content = new FormUrlEncodedContent(formData);
+
+            var response = await _httpClient.PostAsync(uri, content);
+            response.EnsureSuccessStatusCode();
+
+            var json = JObject.Parse(await response.Content.ReadAsStringAsync());
+            var accessToken = json["access_token"].ToString();
+
+            return accessToken;
+        }
+
+        public void SetUserAccessToken(string accessToken)
         {
             if (string.IsNullOrEmpty(accessToken))
             {
@@ -78,15 +103,51 @@ namespace TwitchChatBot.Client.Services
 
         }
 
-        public async Task GetSubscriptionData(string channel)
+        public async Task<Dictionary<string,TwitchSubscriptionStatus>> GetSubscriptionData(IEnumerable<string> channelIds, string bearerToken)
         {
             // TODO: WRITE THE GETSUBSCRIPTION DATA METHOD FOR THE HTTP CLIENT
             // Make the request with the Client ID and Bearer Token set in headers
+            var originalAuthValue = _httpClient.DefaultRequestHeaders.Authorization;
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", bearerToken);
+            
             // Get the JSON Response array and cache it locally
+            var uriBuilder = new UriBuilder(new Uri(_twitchOptions.WebhookSubscriptionsApiUrl))
+            {
+                Query = "first=100"
+            };
+            var response = await _httpClient.GetAsync(uriBuilder.Uri);
+            response.EnsureSuccessStatusCode();
+
+            var json = JObject.Parse(await response.Content.ReadAsStringAsync());
+
+            var subscriptions = JsonConvert.DeserializeObject<List<TwitchWebhookSubscriptionResponse>>(json["data"].ToString());
             // Using the TwitchUser list, match the userId to the channel login name
             // Check which topics are subscribed for that user ID if any
-            // Return an enum that is the union of each topic 
-            // PS: Go create that enum
+            // Return an enum that is the union of each topic
+            var resultDictionary = new Dictionary<string, TwitchSubscriptionStatus>();
+            foreach(var id in channelIds)
+            {
+                var subscriptionStatus = TwitchSubscriptionStatus.None;
+                var results = subscriptions.Where(x => x.Topic.Query.EndsWith(id.ToString()));
+
+                if (results.Count() == 2)
+                {
+                    subscriptionStatus = TwitchSubscriptionStatus.FollowerSubscription | TwitchSubscriptionStatus.StreamSubscription;
+                }
+                else
+                {
+                    var subscription = results.FirstOrDefault();
+                    if (subscription != null)
+                    {
+                        subscriptionStatus = subscription.Topic.OriginalString.Contains("follows") ? TwitchSubscriptionStatus.FollowerSubscription : TwitchSubscriptionStatus.StreamSubscription;
+                    }
+                }
+
+                resultDictionary.Add(id, subscriptionStatus);
+            }
+
+            _httpClient.DefaultRequestHeaders.Authorization = originalAuthValue;
+            return resultDictionary;
         }
     }
 }

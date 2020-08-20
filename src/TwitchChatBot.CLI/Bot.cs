@@ -83,9 +83,9 @@ namespace TwitchChatBot.CLI
                 // IF CONNECTED, DISCONNECT
                 if (_twitchClient.IsConnected)
                 {
-                    Console.WriteLine($"{DateTime.UtcNow.ToString()}: Disconnecting from Twitch");
+                    Console.WriteLine($"{DateTime.UtcNow}: Disconnecting from Twitch");
                     _twitchClient.Disconnect();
-                    Console.WriteLine($"{DateTime.UtcNow.ToString()}: Disconnected from Twitch");
+                    Console.WriteLine($"{DateTime.UtcNow}: Disconnected from Twitch");
                 }
 
                 // UPDATE THE CLIENT CREDS

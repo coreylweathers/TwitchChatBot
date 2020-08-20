@@ -39,8 +39,7 @@ namespace TwitchChatBot.Client.Pages
             var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
             if (authState.User.Identity.IsAuthenticated)
             {
-                await TwitchService.LoadChannelData(TwitchOptions.CurrentValue.Channels);
-                //await TwitchService.GetCurrentSubscriptions();
+                await TwitchService.GetChannelData(TwitchOptions.CurrentValue.Channels);
             }
         }
 

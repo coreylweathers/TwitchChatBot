@@ -7,11 +7,13 @@ namespace TwitchChatBot.Client.Services
 {
     public interface ITwitchService
     {
-        string AccessToken { get; set; }
+        string UserAccessToken { get; set; }
+        string AppAccessToken { get; set; }
         List<TwitchUser> TwitchUsers { get; set; }
-        Task SetAccessToken(string token);
-        Task LoadChannelData(List<string> channels);
-        Task GetCurrentSubscriptions();
+        Task SetUserAccessToken(string token);
+        Task SetAppAccessToken(string clientId, string clientSecret);
+        Task GetChannelData(List<string> channels);
+        Task GetCurrentSubscriptions(IEnumerable<string> channelIds);
         Task<bool> UpdateFollowerSubscription(IEnumerable<string> channels, SubscriptionStatus status);
         Task<bool> UpdateStreamChangeSubscription(IEnumerable<string> channels, SubscriptionStatus subscriptionStatus);
     }

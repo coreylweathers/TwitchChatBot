@@ -6,6 +6,10 @@
         <p>You are not supposed to see this page. Please login using the Twilio Chat Bot account credentials. Thank you</p>
     </NotAuthorized>
     <Authorized>
+        <div class="row">
+            <button class="btn btn-primary mr-2 mb-2" @onclick="@(async () => await StartSubscription())">Subscribe</button>
+            <button class="btn btn-secondary mr-2 mb-2" @onclick="@(async () => await StopSubscription())">Unsubscribe</button> 
+        </div>
         <div class="channels">
             @if (TwitchService.TwitchUsers != null && TwitchService.TwitchUsers.Count > 0)
             {

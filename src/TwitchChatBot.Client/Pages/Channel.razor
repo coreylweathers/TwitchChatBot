@@ -15,6 +15,11 @@
             <InputCheckbox @bind-Value="model.IsFollowerSubscribed" />
         </label>
     </p>
-    <button type="submit" class="btn btn-primary">Submit</button>
-    <button class="btn btn-secondary" @onclick="BlazoredModal.Close" >Close</button>
+    <button type="submit" class="btn btn-primary" @onclick="SaveChanges">Submit</button>
+    <button class="btn btn-secondary" @onclick="BlazoredModal.Close" >Cancel</button>
+
+    @if(_isChangeSaved)
+    {
+        <p class="text-success">@_changesSavedStatus</p>
+    }
 </EditForm>

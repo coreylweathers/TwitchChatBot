@@ -5,11 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using TwitchChatBot.Client.Extensions;
 using TwitchChatBot.Client.Models;
 using TwitchChatBot.Client.Models.Options;
 using TwitchChatBot.Client.Models.Twitch;
+using TwitchChatBot.Client.Models.Twitch.Enums;
 using TwitchChatBot.Shared.Models.Entities;
 
 namespace TwitchChatBot.Client.Services
@@ -17,7 +19,8 @@ namespace TwitchChatBot.Client.Services
     public class TwitchService : ITwitchService
     {
         public List<TwitchUser> TwitchUsers { get; set; }
-        public string AccessToken { get; set; }
+        public string UserAccessToken { get; set; }
+        public string AppAccessToken { get; set; }
 
         private readonly TwitchHttpClient _twitchHttpClient;
         private readonly TwitchOptions _twitchOptions;
@@ -121,7 +124,7 @@ namespace TwitchChatBot.Client.Services
             return true;
         }
 
-        public async Task LoadChannelData(List<string> channels)
+        public async Task GetChannelData(List<string> channels)
         {
             _logger.LogFormattedMessage("Loading Twitch channel data");
             if (TwitchUsers != null && TwitchUsers.Count > 0)
@@ -137,17 +140,25 @@ namespace TwitchChatBot.Client.Services
 
             _logger.LogFormattedMessage("Getting channel data from Twitch");
             TwitchUsers.AddRange(await _twitchHttpClient.GetTwitchChannels(channels).ConfigureAwait(false));
+
+            var ids = TwitchUsers.Select(x => x.Id);
+            await GetCurrentSubscriptions(ids);
             _logger.LogFormattedMessage("Completed logging channel data from Twitch");
         }
 
-        public async Task GetCurrentSubscriptions()
+        public async Task GetCurrentSubscriptions(IEnumerable<string> channelIds)
         {
-            // check subscriptions table and get status
-            foreach (var user in TwitchUsers)
+            var subscriptionEntries = await _twitchHttpClient.GetSubscriptionData(channelIds, AppAccessToken);
+            
+            foreach(var entry in subscriptionEntries)
             {
-                _ = await _storageService.GetSubscriptionStatus(user.LoginName).ConfigureAwait(false);
+                var user = TwitchUsers.FirstOrDefault(x => string.Equals(entry.Key, x.Id));
+                if (user != null)
+                {
+                    user.IsStreamSubscribed = (entry.Value & TwitchSubscriptionStatus.StreamSubscription) == TwitchSubscriptionStatus.StreamSubscription;
+                    user.IsFollowSubscribed = (entry.Value & TwitchSubscriptionStatus.FollowerSubscription) == TwitchSubscriptionStatus.FollowerSubscription;
+                }
             }
-            await Task.CompletedTask;
         }
 
         public Task UnsubscribeFromChannelEvents(List<string> channel)
@@ -155,11 +166,16 @@ namespace TwitchChatBot.Client.Services
             throw new NotImplementedException();
         }
 
-        public Task SetAccessToken(string token)
+        public Task SetUserAccessToken(string token)
         {
-            _twitchHttpClient.SetAccessToken(token);
-            AccessToken = token;
+            _twitchHttpClient.SetUserAccessToken(token);
+            UserAccessToken = token;
             return Task.CompletedTask;
+        }
+
+        public async Task SetAppAccessToken(string clientId, string clientSecret)
+        {
+            AppAccessToken = await _twitchHttpClient.GetAppAccessToken(clientId, clientSecret);
         }
 
         // TODO: Create a GetSubscriptionData method from Twitch that can be used on the Channel component

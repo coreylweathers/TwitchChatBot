@@ -91,10 +91,10 @@ namespace TwitchChatBot.Client
                 opts.Events.OnTokenResponseReceived = async ctx =>
                 {
                     var twitchService = (ITwitchService)ctx.HttpContext.RequestServices.GetService(typeof(ITwitchService));
-                    await twitchService.SetAccessToken(ctx.TokenEndpointResponse.AccessToken);
+                    await twitchService.SetUserAccessToken(ctx.TokenEndpointResponse.AccessToken);
+                    await twitchService.SetAppAccessToken(opts.ClientId, opts.ClientSecret);
                 };
             });
-            services.AddApplicationInsightsTelemetry(Configuration["APPINSIGHTS_INSTRUMENTATIONKEY"]);
             services.AddAzureClients(builder =>
             {
                 builder.AddBlobServiceClient(Configuration["ConnectionStrings:TableStorage/ConnectionString:blob"], preferMsi: true);

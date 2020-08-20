@@ -10,6 +10,7 @@ namespace TwitchChatBot.Client.Models.Options
         public string StreamChangeCallbackTemplate { get; set; }
         public string StreamChangeTopicTemplate { get; set; }
         public string WebhookSubscriptionUrl { get; set; }
+        public string WebhookSubscriptionsApiUrl { get; set; }
         public string UserUrl { get; set; }
         public List<string> Channels { get; set; }
     }
