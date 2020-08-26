@@ -30,25 +30,25 @@ namespace TwitchChatBot.Client.Services
 
         public async Task<string> GetAppAccessToken(string clientId, string clientSecret, string[] scopes = null)
         {
-            var uri = "https://id.twitch.tv/oauth2/token";
-            var formData = new Dictionary<string, string>
-            {
-                {"client_id", clientId },
-                {"client_secret", clientSecret },
-                {"grant_type","client_credentials" }
-            };
-            if (scopes != null)
-            {
-                formData.Add("scopes", string.Join(' ', scopes));
-            }
-            var content = new FormUrlEncodedContent(formData);
+            var originalAuthHeader = _httpClient.DefaultRequestHeaders.Authorization;
+            _httpClient.DefaultRequestHeaders.Clear();
 
-            var response = await _httpClient.PostAsync(uri, content);
+            //_httpClient.DefaultRequestHeaders.Add("Client-ID", clientId);
+
+            var uriBuilder = new UriBuilder("https://id.twitch.tv/oauth2/token");
+
+            var stringBuilder = new StringBuilder();
+            stringBuilder.AppendFormat("client_id={0}", clientId);
+            stringBuilder.AppendFormat("&client_secret={0}", clientSecret);
+            stringBuilder.AppendFormat("&grant_type=client_credentials");
+            uriBuilder.Query = stringBuilder.ToString();
+
+            var response = await _httpClient.PostAsync(uriBuilder.Uri,null);
             response.EnsureSuccessStatusCode();
 
             var json = JObject.Parse(await response.Content.ReadAsStringAsync());
             var accessToken = json["access_token"].ToString();
-
+            _httpClient.DefaultRequestHeaders.Authorization = originalAuthHeader;
             return accessToken;
         }
 
@@ -111,8 +111,9 @@ namespace TwitchChatBot.Client.Services
 
             var bearerToken = await GetAppAccessToken(_oauthOptions.ClientId, _oauthOptions.ClientSecret);
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", bearerToken);
-            
+
             // Get the JSON Response array and cache it locally
+            _httpClient.DefaultRequestHeaders.Add("Client-ID", _oauthOptions.ClientId);
             var uriBuilder = new UriBuilder(new Uri(_twitchOptions.WebhookSubscriptionsApiUrl))
             {
                 Query = "first=100"
