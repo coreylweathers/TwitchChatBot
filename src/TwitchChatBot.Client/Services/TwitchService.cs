@@ -139,6 +139,8 @@ namespace TwitchChatBot.Client.Services
             }
 
             _logger.LogFormattedMessage("Getting channel data from Twitch");
+            var accessTokenClaim = _httpContextAccessor.HttpContext.User.Claims.FirstOrDefault(x => string.Equals(x.Type, "idp_access_token", StringComparison.InvariantCultureIgnoreCase));
+            _twitchHttpClient.SetUserAccessToken(accessTokenClaim.Value);
             TwitchUsers.AddRange(await _twitchHttpClient.GetTwitchChannels(channels).ConfigureAwait(false));
 
             var ids = TwitchUsers.Select(x => x.Id);
@@ -148,7 +150,7 @@ namespace TwitchChatBot.Client.Services
 
         public async Task GetCurrentSubscriptions(IEnumerable<string> channelIds)
         {
-            var subscriptionEntries = await _twitchHttpClient.GetSubscriptionData(channelIds, AppAccessToken);
+            var subscriptionEntries = await _twitchHttpClient.GetSubscriptionData(channelIds);
             
             foreach(var entry in subscriptionEntries)
             {

@@ -18,6 +18,8 @@ using Azure.Storage.Blobs;
 using Azure.Core.Extensions;
 using System;
 using Blazored.Modal;
+using Microsoft.AspNetCore.Authentication.AzureADB2C.UI;
+using Microsoft.AspNetCore.Authentication;
 
 namespace TwitchChatBot.Client
 {
@@ -34,15 +36,9 @@ namespace TwitchChatBot.Client
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            // Adds Identity database 
-            services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(
-                    Configuration.GetConnectionString("DefaultConnection")));
-            services.AddDefaultIdentity<IdentityUser>(options =>
-            {
-                options.SignIn.RequireConfirmedAccount = false;
-            })
-                .AddEntityFrameworkStores<ApplicationDbContext>();
+            // Adds Azure AD B2C
+            services.AddAuthentication(AzureADB2CDefaults.AuthenticationScheme)
+                .AddAzureADB2C(opts => Configuration.Bind("AzureAdB2C", opts));
             services.AddRazorPages();
 
             // Adds ServerSideBlazor
@@ -64,37 +60,8 @@ namespace TwitchChatBot.Client
 
             // Adds a Twitch HttpClient
             services.AddHttpClient<TwitchHttpClient>();
+            services.AddHttpContextAccessor();
 
-            // Add Twitch Authentication
-            services.AddAuthentication(opts =>
-            {
-                opts.DefaultChallengeScheme = "twitch";
-            }).AddCookie()
-              .AddOpenIdConnect("twitch", opts =>
-            {
-                opts.Authority = Configuration["OAuth:Authority"];
-                opts.ClientId = Configuration["OAuth:ClientId"];
-                opts.ClientSecret = Configuration["OAuth:ClientSecret"];
-
-                opts.Scope.Clear();
-                var scopes = Configuration.GetSection("OAuth:Scopes").Get<List<string>>();
-                foreach (var scope in scopes)
-                {
-                    opts.Scope.Add(scope);
-                }
-
-                opts.ResponseType = Configuration["OAuth:ResponseType"];
-                opts.SaveTokens = true;
-
-                opts.GetClaimsFromUserInfoEndpoint = true;
-
-                opts.Events.OnTokenResponseReceived = async ctx =>
-                {
-                    var twitchService = (ITwitchService)ctx.HttpContext.RequestServices.GetService(typeof(ITwitchService));
-                    await twitchService.SetUserAccessToken(ctx.TokenEndpointResponse.AccessToken);
-                    await twitchService.SetAppAccessToken(opts.ClientId, opts.ClientSecret);
-                };
-            });
             services.AddAzureClients(builder =>
             {
                 builder.AddBlobServiceClient(Configuration["ConnectionStrings:TableStorage/ConnectionString:blob"], preferMsi: true);

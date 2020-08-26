@@ -103,11 +103,13 @@ namespace TwitchChatBot.Client.Services
 
         }
 
-        public async Task<Dictionary<string,TwitchSubscriptionStatus>> GetSubscriptionData(IEnumerable<string> channelIds, string bearerToken)
+        public async Task<Dictionary<string,TwitchSubscriptionStatus>> GetSubscriptionData(IEnumerable<string> channelIds)
         {
             // TODO: WRITE THE GETSUBSCRIPTION DATA METHOD FOR THE HTTP CLIENT
             // Make the request with the Client ID and Bearer Token set in headers
             var originalAuthValue = _httpClient.DefaultRequestHeaders.Authorization;
+
+            var bearerToken = await GetAppAccessToken(_oauthOptions.ClientId, _oauthOptions.ClientSecret);
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", bearerToken);
             
             // Get the JSON Response array and cache it locally
