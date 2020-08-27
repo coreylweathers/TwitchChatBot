@@ -20,7 +20,7 @@ namespace TwitchChatBot.Client.Pages
         [Parameter]
         public string ChannelLogin { get; set; }
 
-        private bool _isChangeSaved { get; set; }
+        protected bool IsChangeSaved { get; set; }
 
         private TwitchChannelModel model = new TwitchChannelModel();
         internal TwitchChannelModel initialState;
@@ -55,11 +55,11 @@ namespace TwitchChatBot.Client.Pages
             }
             else
             {
-                _isChangeSaved = await TwitchService.UpdateFollowerSubscription(new[] { model.ChannelName }, model.IsFollowerSubscribed ? SubscriptionStatus.Subscribe : SubscriptionStatus.Unsubscribe) && 
+                IsChangeSaved = await TwitchService.UpdateFollowerSubscription(new[] { model.ChannelName }, model.IsFollowerSubscribed ? SubscriptionStatus.Subscribe : SubscriptionStatus.Unsubscribe) && 
                     await TwitchService.UpdateStreamChangeSubscription(new[] { model.ChannelName }, model.IsStreamSubscribed ? SubscriptionStatus.Subscribe : SubscriptionStatus.Unsubscribe);
                 _changesSavedStatus = "Changes Saved!";
             }
-            _isChangeSaved = true;
+            IsChangeSaved = true;
             StateHasChanged();
         }
     }

@@ -14,7 +14,7 @@ namespace TwitchChatBot.Client.Pages
 {
     public partial class Bot
     {
-        private string UPDATE_PASSWORD = "UpdatePassword";
+        private readonly string UPDATE_PASSWORD = "UpdatePassword";
 
         [Inject]
         protected IStorageService StorageService { get; set; }
