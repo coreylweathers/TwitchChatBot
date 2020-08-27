@@ -143,7 +143,11 @@ namespace TwitchChatBot.Client.Services
                 await Task.CompletedTask;
             }
             _logger.LogFormattedMessage("Getting channel data from Storage");
-            var results = await _storageService.GetTwitchChannels() ?? _twitchOptions.Channels;
+            var results = await _storageService.GetTwitchChannels();
+            if (results.Count == 0)
+            {
+               results = _twitchOptions.Channels;
+            }
             var channels = string.IsNullOrEmpty(channel) ? results : new List<string> { channel };
             _logger.LogFormattedMessage("Completed getting channel data from Storage");
 
