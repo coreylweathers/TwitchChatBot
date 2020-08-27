@@ -1,4 +1,4 @@
-﻿using Microsoft.Azure.Cosmos.Table;
+﻿ using Microsoft.Azure.Cosmos.Table;
 using System.Collections.Generic;
 
 namespace TwitchChatBot.Shared.Models.Entities

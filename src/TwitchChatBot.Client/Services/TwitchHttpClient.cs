@@ -28,12 +28,10 @@ namespace TwitchChatBot.Client.Services
             _httpClient.DefaultRequestHeaders.Add("Client-ID", _oauthOptions.ClientId);
         }
 
-        public async Task<string> GetAppAccessToken(string clientId, string clientSecret, string[] scopes = null)
+        public async Task<string> GetAppAccessToken(string clientId, string clientSecret)
         {
             var originalAuthHeader = _httpClient.DefaultRequestHeaders.Authorization;
             _httpClient.DefaultRequestHeaders.Clear();
-
-            //_httpClient.DefaultRequestHeaders.Add("Client-ID", clientId);
 
             var uriBuilder = new UriBuilder("https://id.twitch.tv/oauth2/token");
 

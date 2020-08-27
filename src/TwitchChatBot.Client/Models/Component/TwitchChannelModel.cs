@@ -12,8 +12,7 @@ namespace TwitchChatBot.Client.Models.Component
 
         public override bool Equals(object obj)
         {
-            var instance = obj as TwitchChannelModel;
-            if (instance == null)
+            if (!(obj is TwitchChannelModel instance))
             {
                 return false;
             }
@@ -21,6 +20,11 @@ namespace TwitchChatBot.Client.Models.Component
                 && ImageUrl.Equals(instance.ImageUrl, StringComparison.InvariantCultureIgnoreCase)
                 && IsFollowerSubscribed == instance.IsFollowerSubscribed
                 && IsStreamSubscribed == instance.IsStreamSubscribed);
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
         }
     }
 }

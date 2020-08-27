@@ -2,8 +2,9 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
-using System.Threading.Tasks;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using TwitchChatBot.Client.Extensions;
 using TwitchChatBot.Client.Models.Options;
 using TwitchChatBot.Shared.Models.Entities;
@@ -36,7 +37,6 @@ namespace TwitchChatBot.Client.Services
             return result.Result as TableEntity;
         }
 
-
         public async Task<SubscriptionActivityEntity> GetSubscriptionStatus(string partitionKey)
         {
             var table = _tableClient.GetTableReference(_tableStorageOptions.SubscriptionTable);
@@ -46,6 +46,15 @@ namespace TwitchChatBot.Client.Services
                          orderby entity.Timestamp descending
                          select entity).Take(1).FirstOrDefault();
 
+            return await Task.FromResult(result);
+        }
+
+        public async Task<List<string>> GetTwitchChannels()
+        {
+            var table = _tableClient.GetTableReference(_tableStorageOptions.SubscriptionTable);
+
+            var result = (from entity in table.CreateQuery<SubscriptionActivityEntity>()
+                          select entity.PartitionKey).ToList().Distinct().ToList();
             return await Task.FromResult(result);
         }
          

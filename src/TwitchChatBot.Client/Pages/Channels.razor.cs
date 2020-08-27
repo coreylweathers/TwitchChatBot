@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using TwitchChatBot.Client.Extensions;
 using TwitchChatBot.Client.Models;
@@ -19,6 +20,8 @@ namespace TwitchChatBot.Client.Pages
         [Inject]
         protected IOptionsMonitor<TwitchOptions> TwitchOptions { get; set; }
         [Inject]
+        protected IStorageService StorageService { get; set; }
+        [Inject]
         protected ITwitchService TwitchService { get; set; }
         [Inject]
         protected ILogger<Channels> Logger { get; set; }
@@ -28,18 +31,14 @@ namespace TwitchChatBot.Client.Pages
         [CascadingParameter]
         public IModalService Modal { get; set; }
 
-        // TODO: Move the buttons to be on each channel, and then setup a global button handler
-        // TODO: Update button enabled state based on channel subscription status
-        // TODO: Add subscription date to the screen
-        private bool _followerSubscriptionFlag;
-        private bool _streamSubscriptionFlag;
+        private string _newChannelText;
 
         protected override async Task OnInitializedAsync()
         {
             var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
             if (authState.User.Identity.IsAuthenticated)
             {
-                await TwitchService.GetChannelData(TwitchOptions.CurrentValue.Channels);
+                await TwitchService.LoadChannelData();
             }
         }
 
@@ -54,19 +53,34 @@ namespace TwitchChatBot.Client.Pages
         public async Task StartSubscription(string channel = null)
         {
             Logger.LogFormattedMessage("Starting Subscription");
-            IEnumerable<string> channels = string.IsNullOrEmpty(channel) ? TwitchOptions.CurrentValue.Channels.AsEnumerable() : new[] { channel };
-            _followerSubscriptionFlag = await TwitchService.UpdateFollowerSubscription(channels, SubscriptionStatus.Subscribe);
-            _streamSubscriptionFlag = await TwitchService.UpdateStreamChangeSubscription(channels, SubscriptionStatus.Subscribe);
+            IEnumerable<string> channels = string.IsNullOrEmpty(channel) ? TwitchService.TwitchUsers.Select(x => x.LoginName) : new[] { channel };
+            await TwitchService.UpdateFollowerSubscription(channels, SubscriptionStatus.Subscribe);
+            await TwitchService.UpdateStreamChangeSubscription(channels, SubscriptionStatus.Subscribe);
             Logger.LogFormattedMessage($"Started Subscription");
         }
 
         public async Task StopSubscription(string channel = null)
         {
             Logger.LogFormattedMessage("Stopping Subscription");
-            IEnumerable<string> channels = string.IsNullOrEmpty(channel) ? TwitchOptions.CurrentValue.Channels.AsEnumerable() : new[] { channel };
+            IEnumerable<string> channels = string.IsNullOrEmpty(channel) ? TwitchService.TwitchUsers.Select(x => x.LoginName) : new[] { channel };
             await TwitchService.UpdateFollowerSubscription(channels, SubscriptionStatus.Unsubscribe);
             await TwitchService.UpdateStreamChangeSubscription(channels, SubscriptionStatus.Unsubscribe);
             Logger.LogFormattedMessage("Stopped Subscription");
+        }
+
+        public async Task AddChannel()
+        {
+            if (string.IsNullOrEmpty(_newChannelText))
+            {
+                await Task.CompletedTask;
+            }
+
+            if(!TwitchService.TwitchUsers.Any(x => string.Equals(x.LoginName, _newChannelText, System.StringComparison.InvariantCultureIgnoreCase)))
+            {
+                await StartSubscription(_newChannelText);
+            }
+            _newChannelText = string.Empty;
+            StateHasChanged();
         }
     }
 }

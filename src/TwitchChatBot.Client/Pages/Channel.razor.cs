@@ -29,9 +29,13 @@ namespace TwitchChatBot.Client.Pages
 
         protected override async Task OnInitializedAsync()
         {
-            await TwitchService.GetChannelData(new List<string> { ChannelLogin });
-
             var channel = TwitchService.TwitchUsers.FirstOrDefault(x => string.Equals(x.LoginName, ChannelLogin, System.StringComparison.InvariantCultureIgnoreCase));
+
+            if (channel == null)
+            {
+                await TwitchService.LoadChannelData(ChannelLogin);
+            }
+
             model = new TwitchChannelModel
             {
                 ChannelName = channel.DisplayName,

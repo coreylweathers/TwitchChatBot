@@ -6,32 +6,36 @@
         <p>You are not supposed to see this page. Please login using the Twilio Chat Bot account credentials. Thank you</p>
     </NotAuthorized>
     <Authorized>
-        <div class="row">
-            <button class="btn btn-primary mr-2 mb-2" @onclick="@(async () => await StartSubscription())">Subscribe</button>
-            <button class="btn btn-secondary mr-2 mb-2" @onclick="@(async () => await StopSubscription())">Unsubscribe</button> 
+        <div class="row mb-2">
+            <button class="btn btn-primary mr-2 mb-2" @onclick="@(async () => await StartSubscription())">Subscribe to All</button>
+            <button class="btn btn-secondary mr-2 mb-2" @onclick="@(async () => await StopSubscription())">Unsubscribe from All</button>
         </div>
-        <div class="channels">
-            @if (TwitchService.TwitchUsers != null && TwitchService.TwitchUsers.Count > 0)
-            {
-                <div class="row">
-                    @foreach (var user in TwitchService.TwitchUsers.OrderBy(x => x.LoginName))
-                    {
-                        <div class="card" style="width: 18rem;">
-                            <button @onclick="@(() =>OpenChannel(user.LoginName))">
-                                <img src=@user.ProfileImageUrl class="card-img-top" alt=@user.LoginName>
-                            </button>
-                            <div class="card-body">
-                                <h5 class="card-title"><em>@user.LoginName</em></h5>
-                                <p class="card-text"><i>@user.Description</i></p>
-                            </div>
+        <div class="row mb-2">
+            <label class="mr-1" for="newChannel">New Channel: </label>
+            <input id="newChannel" class="mr-1" @bind="_newChannelText" />
+            <button id="addChannelBtn" class="btn btn-primary" @onclick="AddChannel">Add Channel</button>
+        </div>
 
-                        </div>
-                    }
+        @if (TwitchService.TwitchUsers != null && TwitchService.TwitchUsers.Count > 0)
+        {
+            <div class="row">
+                @foreach (var user in TwitchService.TwitchUsers.OrderBy(x => x.LoginName))
+                {
                     <div class="card" style="width: 18rem;">
+                        <button @onclick="@(() =>OpenChannel(user.LoginName))">
+                            <img src=@user.ProfileImageUrl class="card-img-top" alt=@user.LoginName>
+                        </button>
+                        <div class="card-body">
+                            <h5 class="card-title"><em>@user.LoginName</em></h5>
+                            <p class="card-text"><i>@user.Description</i></p>
+                        </div>
 
                     </div>
+                }
+                <div class="card" style="width: 18rem;">
+
                 </div>
-            }
-        </div>
+            </div>
+        }
     </Authorized>
 </AuthorizeView>

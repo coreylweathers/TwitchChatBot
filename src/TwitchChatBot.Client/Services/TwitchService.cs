@@ -48,6 +48,12 @@ namespace TwitchChatBot.Client.Services
                 _logger.LogFormattedMessage($"Starting the follower subscription for {channel}");
                 var selected = TwitchUsers?.FirstOrDefault(user => string.Equals(channel, user.LoginName, StringComparison.InvariantCultureIgnoreCase));
 
+                if (selected == null)
+                {
+                    await LoadChannelData(channel);
+                    selected = TwitchUsers?.FirstOrDefault(user => string.Equals(channel, user.LoginName, StringComparison.InvariantCultureIgnoreCase));
+                }
+
                 var request = new TwitchWebhookRequest
                 {
                     Callback = string.Format(_twitchOptions.FollowerCallbackTemplate, _httpContextAccessor.HttpContext.Request.Host.Value, channel),
@@ -124,26 +130,29 @@ namespace TwitchChatBot.Client.Services
             return true;
         }
 
-        public async Task GetChannelData(List<string> channels)
+        public async Task LoadChannelData(string channel = null)
         {
             _logger.LogFormattedMessage("Loading Twitch channel data");
-            if (TwitchUsers != null && TwitchUsers.Count > 0)
-            {
-                _logger.LogFormattedMessage("Twitch channel data has already been loaded");
-                await Task.CompletedTask;
-                return;
-            }
-            else if (TwitchUsers == null)
+            if (TwitchUsers == null)
             {
                 TwitchUsers = new List<TwitchUser>();
             }
+
+            if (!string.IsNullOrEmpty(channel) && TwitchUsers.Any(x => string.Equals(x.LoginName, channel, StringComparison.InvariantCultureIgnoreCase)))
+            {
+                await Task.CompletedTask;
+            }
+            _logger.LogFormattedMessage("Getting channel data from Storage");
+            var results = await _storageService.GetTwitchChannels() ?? _twitchOptions.Channels;
+            var channels = string.IsNullOrEmpty(channel) ? results : new List<string> { channel };
+            _logger.LogFormattedMessage("Completed getting channel data from Storage");
 
             _logger.LogFormattedMessage("Getting channel data from Twitch");
             var accessTokenClaim = _httpContextAccessor.HttpContext.User.Claims.FirstOrDefault(x => string.Equals(x.Type, "idp_access_token", StringComparison.InvariantCultureIgnoreCase));
             _twitchHttpClient.SetUserAccessToken(accessTokenClaim.Value);
             TwitchUsers.AddRange(await _twitchHttpClient.GetTwitchChannels(channels).ConfigureAwait(false));
 
-            var ids = TwitchUsers.Select(x => x.Id);
+            var ids = TwitchUsers.Where(x => string.Equals(channel,x.LoginName, StringComparison.InvariantCultureIgnoreCase)).Select(x => x.Id);
             await GetCurrentSubscriptions(ids);
             _logger.LogFormattedMessage("Completed logging channel data from Twitch");
         }
@@ -151,8 +160,8 @@ namespace TwitchChatBot.Client.Services
         public async Task GetCurrentSubscriptions(IEnumerable<string> channelIds)
         {
             var subscriptionEntries = await _twitchHttpClient.GetSubscriptionData(channelIds);
-            
-            foreach(var entry in subscriptionEntries)
+
+            foreach (var entry in subscriptionEntries)
             {
                 var user = TwitchUsers.FirstOrDefault(x => string.Equals(entry.Key, x.Id));
                 if (user != null)
@@ -161,11 +170,6 @@ namespace TwitchChatBot.Client.Services
                     user.IsFollowSubscribed = (entry.Value & TwitchSubscriptionStatus.FollowerSubscription) == TwitchSubscriptionStatus.FollowerSubscription;
                 }
             }
-        }
-
-        public Task UnsubscribeFromChannelEvents(List<string> channel)
-        {
-            throw new NotImplementedException();
         }
 
         public Task SetUserAccessToken(string token)
