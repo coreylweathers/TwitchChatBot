@@ -68,6 +68,9 @@ namespace TwitchChatBot.Client
                 builder.AddQueueServiceClient(Configuration["ConnectionStrings:TableStorage/ConnectionString:queue"], preferMsi: true);
             });
 
+            // The following line enables Application Insights telemetry collection.
+            services.AddApplicationInsightsTelemetry(Configuration);
+
             // Add Telerik blazor
             //services.AddTelerikBlazor();
             services.AddBlazoredModal();

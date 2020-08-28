@@ -18,7 +18,7 @@
     <button type="submit" class="btn btn-primary" @onclick="SaveChanges">Submit</button>
     <button class="btn btn-secondary" @onclick="BlazoredModal.Close" >Cancel</button>
 
-    @if(_isChangeSaved)
+    @if(IsChangeSaved)
     {
         <p class="text-success">@_changesSavedStatus</p>
     }
