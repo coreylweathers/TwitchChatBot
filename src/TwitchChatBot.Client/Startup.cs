@@ -62,12 +62,6 @@ namespace TwitchChatBot.Client
             services.AddHttpClient<TwitchHttpClient>();
             services.AddHttpContextAccessor();
 
-            services.AddAzureClients(builder =>
-            {
-                builder.AddBlobServiceClient(Configuration["ConnectionStrings:TableStorage/ConnectionString:blob"], preferMsi: true);
-                builder.AddQueueServiceClient(Configuration["ConnectionStrings:TableStorage/ConnectionString:queue"], preferMsi: true);
-            });
-
             // The following line enables Application Insights telemetry collection.
             services.AddApplicationInsightsTelemetry(Configuration);
 
@@ -107,31 +101,6 @@ namespace TwitchChatBot.Client
                 endpoints.MapBlazorHub();
                 endpoints.MapFallbackToPage("/_Host");
             });
-        }
-    }
-    internal static class StartupExtensions
-    {
-        public static IAzureClientBuilder<BlobServiceClient, BlobClientOptions> AddBlobServiceClient(this AzureClientFactoryBuilder builder, string serviceUriOrConnectionString, bool preferMsi)
-        {
-            if (preferMsi && Uri.TryCreate(serviceUriOrConnectionString, UriKind.Absolute, out Uri serviceUri))
-            {
-                return builder.AddBlobServiceClient(serviceUri);
-            }
-            else
-            {
-                return builder.AddBlobServiceClient(serviceUriOrConnectionString);
-            }
-        }
-        public static IAzureClientBuilder<QueueServiceClient, QueueClientOptions> AddQueueServiceClient(this AzureClientFactoryBuilder builder, string serviceUriOrConnectionString, bool preferMsi)
-        {
-            if (preferMsi && Uri.TryCreate(serviceUriOrConnectionString, UriKind.Absolute, out Uri serviceUri))
-            {
-                return builder.AddQueueServiceClient(serviceUri);
-            }
-            else
-            {
-                return builder.AddQueueServiceClient(serviceUriOrConnectionString);
-            }
         }
     }
 }

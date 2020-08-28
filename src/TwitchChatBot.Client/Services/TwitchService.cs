@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using TwitchChatBot.Client.Extensions;
@@ -142,14 +143,39 @@ namespace TwitchChatBot.Client.Services
             {
                 await Task.CompletedTask;
             }
-            _logger.LogFormattedMessage("Getting channel data from Storage");
-            var results = await _storageService.GetTwitchChannels();
-            if (results.Count == 0)
+
+            List<string> channels;
+
+            if (!string.IsNullOrEmpty(channel))
             {
-               results = _twitchOptions.Channels;
+                _logger.LogFormattedMessage($"Getting channel data for {channel}");
+                channels = new List<string> { channel };
             }
-            var channels = string.IsNullOrEmpty(channel) ? results : new List<string> { channel };
-            _logger.LogFormattedMessage("Completed getting channel data from Storage");
+            else
+            {
+                _logger.LogFormattedMessage("Getting channels from Storage");
+                channels = await _storageService.GetTwitchChannels();
+                if (channels.Count == 0)
+                {
+                    _logger.LogFormattedMessage("No data in storage. Getting channels from Config settings");
+                    channels = _twitchOptions.Channels;
+                    _logger.LogFormattedMessage("Completed getting channels from Config settings");
+                }
+                
+                foreach(var entry in channels)
+                {
+                    if (!TwitchUsers.Any(x => string.Equals(x.LoginName, entry, StringComparison.InvariantCultureIgnoreCase)))
+                    {
+                        TwitchUsers.Clear();
+                    }
+                }
+
+                if (TwitchUsers.Count > 0)
+                {
+                    return;
+                }
+            }
+            _logger.LogFormattedMessage("Completed getting channels from Storage");
 
             _logger.LogFormattedMessage("Getting channel data from Twitch");
             var accessTokenClaim = _httpContextAccessor.HttpContext.User.Claims.FirstOrDefault(x => string.Equals(x.Type, "idp_access_token", StringComparison.InvariantCultureIgnoreCase));
