@@ -5,5 +5,7 @@
         public string ConnectionString { get; set; }
         public string StreamingTable { get; set; }
         public string SubscriptionTable { get; set; }
+
+        public string SettingsTable {get;set;}
     }
 }

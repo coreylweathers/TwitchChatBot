@@ -434,3 +434,6 @@ $RECYCLE.BIN/
 
 # Modified files for our project
 **/src/TwitchChatBot.CLI/appsettings.json
+
+# For nested .vscode folders
+*.vscode

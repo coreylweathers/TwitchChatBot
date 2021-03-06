@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <UserSecretsId>aspnet-TwitchChatBot.Client-CEED51D6-F665-4079-B386-73412BA013E5</UserSecretsId>
     <ApplicationInsightsResourceId>/subscriptions/0e7836be-27bd-48cf-9683-95b89742a3e5/resourceGroups/TwilioMetricsRG/providers/microsoft.insights/components/twiliometricsai</ApplicationInsightsResourceId>
   </PropertyGroup>

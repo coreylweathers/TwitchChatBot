@@ -51,11 +51,21 @@ namespace TwitchChatBot.Client.Services
 
         public async Task<List<string>> GetTwitchChannels()
         {
-            var table = _tableClient.GetTableReference(_tableStorageOptions.SubscriptionTable);
-
-            var result = (from entity in table.CreateQuery<SubscriptionActivityEntity>()
-                          select entity.PartitionKey).ToList().Distinct().ToList();
-            return await Task.FromResult(result);
+            List<string> results = null;
+            var table = _tableClient.ListTables().FirstOrDefault(table => string.Equals(table.Name, _tableStorageOptions.SettingsTable,StringComparison.CurrentCultureIgnoreCase));
+            
+            if (table == null)
+            {
+                await table.CreateAsync();
+                // TODO: If the table is just created, add the data to the table (for local debug purposes)
+            }
+            else 
+            {
+            // TODO: Wrap this in a todo so we can get the error that occurs when this can't connect to a table
+             results = (from entity in table.CreateQuery<SettingsEntity>()
+                          select entity.RowKey).ToList().Distinct().ToList();
+            }
+            return await Task.FromResult(results);
         }
          
         private CloudTableClient CreateTableClient(string connectionString)
