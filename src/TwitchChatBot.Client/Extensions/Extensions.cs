@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using TwitchChatBot.Client.Models;
@@ -16,7 +17,7 @@ namespace TwitchChatBot.Client.Extensions
                 return;
             }
 
-            logger.LogInformation($"{DateTime.UtcNow}: {message}");
+            logger.LogInformation($"{DateTime.UtcNow.ToString(CultureInfo.CurrentUICulture)}: {message}");
         }
 
         public static string ToRowKeyString(this DateTime date)

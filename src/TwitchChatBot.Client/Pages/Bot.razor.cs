@@ -37,7 +37,7 @@ namespace TwitchChatBot.Client.Pages
             await Task.CompletedTask;
         }
 
-        protected async Task UpdatePassword()
+        private async Task UpdatePassword()
         {
             Logger.LogFormattedMessage("Updating the password to the chatbot");
             // VALIDATE THAT THE TEXT IS ACTUALLY UPDATED 
