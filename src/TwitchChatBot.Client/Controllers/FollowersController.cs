@@ -5,6 +5,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using TwitchChatBot.Client.Extensions;
 using TwitchChatBot.Client.Models.Options;
@@ -41,15 +42,14 @@ namespace TwitchChatBot.Client.Controllers.Twitch
 
             try
             {
-                foreach (var update in updates)
+                foreach (var entity in updates.Select(update => new ChannelActivityEntity
                 {
-                    var entity = new ChannelActivityEntity
-                    {
-                        Activity = StreamActivity.UserFollowed.ToString(),
-                        PartitionKey = update.ToName,
-                        RowKey = update.FollowedAt.ToRowKeyString(),
-                        Viewer = update.FromName
-                    };
+                    Activity = StreamActivity.UserFollowed.ToString(),
+                    PartitionKey = update.ToName,
+                    RowKey = update.FollowedAt.ToRowKeyString(),
+                    Viewer = update.FromName
+                }))
+                {
                     var result = await _storageService.AddDataToStorage(entity, _tableStorageOptions.StreamingTable);
                     _logger.LogFormattedMessage($"Processed Twitch webhook for channel {channel}");
                 }

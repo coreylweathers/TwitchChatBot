@@ -72,7 +72,7 @@ namespace TwitchChatBot.Client.Services
                     _logger.LogWarning($"Unable to successfully subscribe to follower events for {request}");
                     return false;
                 }
-                selected.IsFollowSubscribed = subscriptionStatus == SubscriptionStatus.Subscribe;
+                selected.IsFollowSubscribed = subscriptionStatus == SubscriptionStatus.Subscribed;
 
                 _logger.LogFormattedMessage("Adding Subscription Activity Update to storage");
                 var entity = new SubscriptionActivityEntity
@@ -112,7 +112,7 @@ namespace TwitchChatBot.Client.Services
                     _logger.LogWarning($"Unable to successfully subscribe to stream events for {request}");
                     return false;
                 }
-                selected.IsStreamSubscribed = subscriptionStatus == SubscriptionStatus.Subscribe;
+                selected.IsStreamSubscribed = subscriptionStatus == SubscriptionStatus.Subscribed;
 
                 _logger.LogFormattedMessage($"Updated the stream subscription successfully for {request}");
 
