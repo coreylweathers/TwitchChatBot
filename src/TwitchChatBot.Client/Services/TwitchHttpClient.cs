@@ -39,6 +39,7 @@ namespace TwitchChatBot.Client.Services
             stringBuilder.AppendFormat("client_id={0}", clientId);
             stringBuilder.AppendFormat("&client_secret={0}", clientSecret);
             stringBuilder.AppendFormat("&grant_type=client_credentials");
+            stringBuilder.AppendFormat($"&scopes=channel:read:subscription");
             uriBuilder.Query = stringBuilder.ToString();
 
             var response = await _httpClient.PostAsync(uriBuilder.Uri,null);
