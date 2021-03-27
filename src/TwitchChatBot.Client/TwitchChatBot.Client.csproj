@@ -28,6 +28,8 @@
     <PackageReference Include="Microsoft.Extensions.Azure" Version="1.0.0" />
     <!--<PackageReference Include="Telerik.UI.for.Blazor" Version="2.15.0" /> -->
     <PackageReference Include="TwitchLib" Version="3.2.0" />
+    <PackageReference Include="Microsoft.Identity.Web" Version="1.8.2" />
+    <PackageReference Include="Microsoft.Identity.Web.UI" Version="1.8.2" />
   </ItemGroup>
 
   <ItemGroup>
