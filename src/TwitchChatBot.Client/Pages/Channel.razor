@@ -16,7 +16,7 @@
         </label>
     </p>
     <button type="submit" class="btn btn-primary" @onclick="SaveChanges">Submit</button>
-    <button class="btn btn-secondary" @onclick="BlazoredModal.Close" >Cancel</button>
+    <button class="btn btn-secondary" @onclick="async () => await BlazoredModal.CloseAsync()" >Cancel</button>
 
     @if(IsChangeSaved)
     {

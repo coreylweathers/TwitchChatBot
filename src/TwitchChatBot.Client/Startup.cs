@@ -10,8 +10,9 @@ using TwitchChatBot.Client.Hubs;
 using TwitchChatBot.Client.Models.Options;
 using TwitchChatBot.Client.Services;
 using Blazored.Modal;
-using Microsoft.AspNetCore.Authentication.AzureADB2C.UI;
-using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.Identity.Web;
+using Microsoft.Identity.Web.UI;
 
 namespace TwitchChatBot.Client
 {
@@ -29,14 +30,26 @@ namespace TwitchChatBot.Client
         public void ConfigureServices(IServiceCollection services)
         {
             // Adds Azure AD B2C
-            services.AddAuthentication(AzureADB2CDefaults.AuthenticationScheme)
-                .AddAzureADB2C(opts => Configuration.Bind("AzureAdB2C", opts));
-            services.AddRazorPages();
+            //services.AddAuthentication(AzureADB2CDefaults.AuthenticationScheme)
+               // .AddAzureADB2C(opts => Configuration.Bind("AzureAdB2C", opts));
+               //services.AddRazorPages();
+               
+               services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
+                   .AddMicrosoftIdentityWebApp(Configuration.GetSection("AzureAdB2C"));
+               services.AddControllersWithViews()
+                   .AddMicrosoftIdentityUI();
 
-            // Adds ServerSideBlazor
-            services.AddServerSideBlazor();
+               services.AddAuthorization(options =>
+               {
+                   // By default, all incoming requests will be authorized according to the default policy
+                   options.FallbackPolicy = options.DefaultPolicy;
+               });
+
+               services.AddRazorPages();
+               // Adds ServerSideBlazor
+            services.AddServerSideBlazor().AddMicrosoftIdentityConsentHandler();
             // Adds Authentication
-            services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
+            //services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
             // Adds API support for webhooks
             services.AddControllers();
 
