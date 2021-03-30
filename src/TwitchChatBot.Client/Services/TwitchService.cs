@@ -139,6 +139,7 @@ namespace TwitchChatBot.Client.Services
                 TwitchUsers = new List<TwitchUser>();
             }
 
+            // TODO: REFACTOR THIS IF CONDITION OUT
             if (!string.IsNullOrEmpty(channel) && TwitchUsers.Any(x => string.Equals(x.LoginName, channel, StringComparison.InvariantCultureIgnoreCase)))
             {
                 await Task.CompletedTask;
@@ -162,13 +163,14 @@ namespace TwitchChatBot.Client.Services
                     _logger.LogFormattedMessage("Completed getting channels from Config settings");
                 }
                 
+                /*
                 foreach(var entry in channels)
                 {
                     if (!TwitchUsers.Any(x => string.Equals(x.LoginName, entry, StringComparison.InvariantCultureIgnoreCase)))
                     {
                         TwitchUsers.Clear();
                     }
-                }
+                }*/
 
                 if (TwitchUsers.Count > 0)
                 {
@@ -178,8 +180,6 @@ namespace TwitchChatBot.Client.Services
             _logger.LogFormattedMessage("Completed getting channels from Storage");
 
             _logger.LogFormattedMessage("Getting channel data from Twitch");
-            var accessTokenClaim = _httpContextAccessor.HttpContext.User.Claims.FirstOrDefault(x => string.Equals(x.Type, "idp_access_token", StringComparison.InvariantCultureIgnoreCase));
-            _twitchHttpClient.SetUserAccessToken(accessTokenClaim.Value);
             TwitchUsers.AddRange(await _twitchHttpClient.GetTwitchChannels(channels).ConfigureAwait(false));
 
             var ids = TwitchUsers.Where(x => string.Equals(channel,x.LoginName, StringComparison.InvariantCultureIgnoreCase)).Select(x => x.Id);
@@ -200,18 +200,6 @@ namespace TwitchChatBot.Client.Services
                     user.IsFollowSubscribed = (entry.Value & TwitchSubscriptionStatus.FollowerSubscription) == TwitchSubscriptionStatus.FollowerSubscription;
                 }
             }
-        }
-
-        public Task SetUserAccessToken(string token)
-        {
-            _twitchHttpClient.SetUserAccessToken(token);
-            UserAccessToken = token;
-            return Task.CompletedTask;
-        }
-
-        public async Task SetAppAccessToken(string clientId, string clientSecret)
-        {
-            AppAccessToken = await _twitchHttpClient.GetAppAccessToken(clientId, clientSecret);
         }
 
         // TODO: Create a GetSubscriptionData method from Twitch that can be used on the Channel component

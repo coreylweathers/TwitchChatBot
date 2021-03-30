@@ -39,10 +39,11 @@ namespace TwitchChatBot.Client.Services
             stringBuilder.AppendFormat("client_id={0}", clientId);
             stringBuilder.AppendFormat("&client_secret={0}", clientSecret);
             stringBuilder.AppendFormat("&grant_type=client_credentials");
-            stringBuilder.AppendFormat($"&scopes=channel:read:subscription");
+            // TODO: Refactor this to grab scopes from the appsettings
+            stringBuilder.AppendFormat("&scope=user:read:email");
             uriBuilder.Query = stringBuilder.ToString();
 
-            var response = await _httpClient.PostAsync(uriBuilder.Uri,null);
+            var response = await _httpClient.PostAsync(uriBuilder.Uri, null);
             response.EnsureSuccessStatusCode();
 
             var json = JObject.Parse(await response.Content.ReadAsStringAsync());
@@ -92,7 +93,11 @@ namespace TwitchChatBot.Client.Services
                 Query = string.Join("&", channelLogins.Select(c => $"login={c}")).TrimStart('&')
             };
 
-
+            if (_httpClient.DefaultRequestHeaders.Authorization == null)
+            {
+                var bearerToken = await GetAppAccessToken(_oauthOptions.ClientId, _oauthOptions.ClientSecret);
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", bearerToken);
+            }
             var destination = uriBuilder.Uri;
             var response = await _httpClient.GetAsync(destination);
             response.EnsureSuccessStatusCode();
@@ -102,7 +107,7 @@ namespace TwitchChatBot.Client.Services
 
         }
 
-        public async Task<Dictionary<string,TwitchSubscriptionStatus>> GetSubscriptionData(IEnumerable<string> channelIds)
+        public async Task<Dictionary<string, TwitchSubscriptionStatus>> GetSubscriptionData(IEnumerable<string> channelIds)
         {
             // TODO: WRITE THE GETSUBSCRIPTION DATA METHOD FOR THE HTTP CLIENT
             // Make the request with the Client ID and Bearer Token set in headers
@@ -127,7 +132,7 @@ namespace TwitchChatBot.Client.Services
             // Check which topics are subscribed for that user ID if any
             // Return an enum that is the union of each topic
             var resultDictionary = new Dictionary<string, TwitchSubscriptionStatus>();
-            foreach(var id in channelIds)
+            foreach (var id in channelIds)
             {
                 var subscriptionStatus = TwitchSubscriptionStatus.None;
                 var results = subscriptions.Where(x => x.Topic.Query.EndsWith(id.ToString()));

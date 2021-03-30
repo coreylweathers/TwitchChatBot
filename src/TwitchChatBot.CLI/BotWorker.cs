@@ -39,7 +39,7 @@ namespace TwitchChatBot.CLI
             _calculator = new Calculator(_config);
         }
 
-        public async Task Initialize()
+        private async Task Initialize()
         {
             await SetupTwitchClient().ConfigureAwait(false);
             _tableClient = await Common.CreateTableClient(_config[Constants.CONFIG_TABLE_CONNECTIONSTRING])
@@ -189,15 +189,14 @@ namespace TwitchChatBot.CLI
             var date = DateTime.UtcNow;
             _logger.LogInformation(
                 $"{date.ToRowKeyString()}: Existing users detected in {e.Channel}: {string.Join(", ", e.Users)}");
-            foreach (var user in e.Users)
+            foreach (var entity in e.Users.Select(user => new ChannelActivityEntity
             {
-                var entity = new ChannelActivityEntity
-                {
-                    PartitionKey = user,
-                    RowKey = date.ToRowKeyString(),
-                    Activity = StreamActivity.UserJoined.ToString(),
-                    Viewer = e.Channel
-                };
+                PartitionKey = user,
+                RowKey = date.ToRowKeyString(),
+                Activity = StreamActivity.UserJoined.ToString(),
+                Viewer = e.Channel
+            }))
+            {
                 await Common.AddEntityToStorage(_tableClient, entity, _streamingTable).ConfigureAwait(false);
                 await _zapierClient.AddChannelEvent(Constants.ZAPIER_EVENTTYPE_MESSAGE, entity).ConfigureAwait(false);
             }

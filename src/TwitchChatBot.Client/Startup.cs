@@ -1,3 +1,5 @@
+using Blazored.Modal;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Hosting;
@@ -5,14 +7,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using TwitchChatBot.Client.Areas.Identity;
+using Microsoft.Identity.Web;
+using Microsoft.Identity.Web.UI;
 using TwitchChatBot.Client.Hubs;
 using TwitchChatBot.Client.Models.Options;
 using TwitchChatBot.Client.Services;
-using Blazored.Modal;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
-using Microsoft.Identity.Web;
-using Microsoft.Identity.Web.UI;
 
 namespace TwitchChatBot.Client
 {
@@ -30,28 +29,26 @@ namespace TwitchChatBot.Client
         public void ConfigureServices(IServiceCollection services)
         {
             // Adds Azure AD B2C
-            //services.AddAuthentication(AzureADB2CDefaults.AuthenticationScheme)
-               // .AddAzureADB2C(opts => Configuration.Bind("AzureAdB2C", opts));
-               //services.AddRazorPages();
-               
-               services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
-                   .AddMicrosoftIdentityWebApp(Configuration.GetSection("AzureAdB2C"));
-               services.AddControllersWithViews()
-                   .AddMicrosoftIdentityUI();
+            services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme).AddMicrosoftIdentityWebApp(Configuration.GetSection("AzureAdB2C"));
 
-               services.AddAuthorization(options =>
-               {
-                   // By default, all incoming requests will be authorized according to the default policy
-                   options.FallbackPolicy = options.DefaultPolicy;
-               });
+            // Adds support for Controllers + Default Views for Microsoft.Identity.Web (for AzureADB2C Auth)
+            services.AddControllersWithViews()
+                .AddMicrosoftIdentityUI();
+            
+            services.AddAuthorization(options =>
+            {
+                // By default, all incoming requests will be authorized according to the default policy
+                options.FallbackPolicy = options.DefaultPolicy;
+            });
 
-               services.AddRazorPages();
-               // Adds ServerSideBlazor
+
+            // Adds Razor Pages support
+            services.AddRazorPages();
+
+            // Adds ServerSideBlazor
             services.AddServerSideBlazor().AddMicrosoftIdentityConsentHandler();
             // Adds Authentication
-            //services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
-            // Adds API support for webhooks
-            services.AddControllers();
+            //services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();          
 
             // Add Services to IOC
             services.AddSingleton<IStorageService, AzureTableStorageService>();
@@ -68,7 +65,7 @@ namespace TwitchChatBot.Client
             services.AddHttpContextAccessor();
 
             // The following line enables Application Insights telemetry collection.
-            services.AddApplicationInsightsTelemetry(Configuration);
+            //services.AddApplicationInsightsTelemetry(Configuration);
 
             // Add Telerik blazor
             //services.AddTelerikBlazor();

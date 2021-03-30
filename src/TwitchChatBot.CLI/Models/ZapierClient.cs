@@ -10,13 +10,13 @@ namespace TwitchChatBot.CLI.Models
 {
     public class ZapierClient
     {
-        protected Dictionary<string, Uri> UrlDictionary { get; private set; }
+        private Dictionary<string, Uri> _urlDictionary { get; set; }
         private readonly HttpClient _httpClient;
 
         public ZapierClient()
         {
 
-            UrlDictionary = new Dictionary<string, Uri>();
+            _urlDictionary = new Dictionary<string, Uri>();
             _httpClient = new HttpClient();
         }
 
@@ -37,17 +37,17 @@ namespace TwitchChatBot.CLI.Models
                 throw new ArgumentException("The Url passed along is not a valid Url. Please double check the value", nameof(url));
             }
 
-            if (UrlDictionary.ContainsKey(key))
+            if (_urlDictionary.ContainsKey(key))
             {
-                var value = UrlDictionary[key];
+                var value = _urlDictionary[key];
                 if (!string.Equals(value.ToString(), url, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    UrlDictionary[key] = new Uri(url);
+                    _urlDictionary[key] = new Uri(url);
                 }
             }
             else
             {
-                UrlDictionary.Add(key, new Uri(url));
+                _urlDictionary.Add(key, new Uri(url));
             }
 
             await Task.CompletedTask;
@@ -61,7 +61,7 @@ namespace TwitchChatBot.CLI.Models
                 throw new ArgumentNullException(nameof(eventType));
             }
 
-            if (!UrlDictionary.ContainsKey(eventType))
+            if (!_urlDictionary.ContainsKey(eventType))
             {
                 throw new ArgumentException($"The url for {eventType} is not available. Please update your appsettings and try again", nameof(eventType));
             }
@@ -73,7 +73,7 @@ namespace TwitchChatBot.CLI.Models
                 new KeyValuePair<string, string>("timestamp", entity.Timestamp.DateTime.ToRowKeyString())
             });
 
-            var uri = UrlDictionary[eventType];
+            var uri = _urlDictionary[eventType];
             var response = await _httpClient.PostAsync(uri, postData);
             response.EnsureSuccessStatusCode();
 

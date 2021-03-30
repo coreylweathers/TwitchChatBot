@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace TwitchChatBot.CLI
 {
-    class Common
+    internal static class Common
     {
         public static async Task<CloudTableClient> CreateTableClient(string connectionString)
         {
