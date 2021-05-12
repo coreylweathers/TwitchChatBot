@@ -5,8 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Runtime.CompilerServices;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using TwitchChatBot.Client.Extensions;
 using TwitchChatBot.Client.Models;
@@ -22,6 +20,7 @@ namespace TwitchChatBot.Client.Services
         public List<TwitchUser> TwitchUsers { get; set; }
         public string UserAccessToken { get; set; }
         public string AppAccessToken { get; set; }
+        public List<string> MonitoredChannels { get; set; }
 
         private readonly TwitchHttpClient _twitchHttpClient;
         private readonly TwitchOptions _twitchOptions;
@@ -42,93 +41,14 @@ namespace TwitchChatBot.Client.Services
 
         public async Task<bool> UpdateFollowerSubscription(IEnumerable<string> channels, SubscriptionStatus subscriptionStatus)
         {
-            _logger.LogFormattedMessage($"Updating the Followers Subscription for the selected channels to {subscriptionStatus}");
-            foreach (var channel in channels)
-            {
-                // MAKE THE WEBHOOK REQUEST TO TWITCH
-                _logger.LogFormattedMessage($"Starting the follower subscription for {channel}");
-                var selected = TwitchUsers?.FirstOrDefault(user => string.Equals(channel, user.LoginName, StringComparison.InvariantCultureIgnoreCase));
-
-                if (selected == null)
-                {
-                    await LoadChannelData(channel);
-                    selected = TwitchUsers?.FirstOrDefault(user => string.Equals(channel, user.LoginName, StringComparison.InvariantCultureIgnoreCase));
-                }
-
-                var request = new TwitchWebhookRequest
-                {
-                    Callback = string.Format(_twitchOptions.FollowerCallbackTemplate, _httpContextAccessor.HttpContext.Request.Host.Value, channel),
-                    Mode = subscriptionStatus.ToString().ToLower(),
-                    Topic = string.Format(_twitchOptions.FollowerTopicTemplate, selected.Id),
-                    Lease = _twitchOptions.DefaultLease
-                };
-
-                // UPDATE THE SUBSCRIPTION STATUS IN STORAGE
-                _logger.LogFormattedMessage($"Updating the follower subscription for {request}");
-                var responseCode = await _twitchHttpClient.UpdateSubscription(request).ConfigureAwait(false);
-                _logger.LogFormattedMessage($"Twitch response from updating subscription: {responseCode}");
-                if (responseCode != HttpStatusCode.Accepted)
-                {
-                    _logger.LogWarning($"Unable to successfully subscribe to follower events for {request}");
-                    return false;
-                }
-                selected.IsFollowSubscribed = subscriptionStatus == SubscriptionStatus.Subscribed;
-
-                _logger.LogFormattedMessage("Adding Subscription Activity Update to storage");
-                var entity = new SubscriptionActivityEntity
-                {
-                    PartitionKey = channel,
-                    RowKey = DateTime.UtcNow.ToRowKeyString(),
-                    Activity = "FollowSubscription",
-                    State = subscriptionStatus.ToString()
-                };
-                var result = await _storageService.AddDataToStorage(entity, _tableStorageOptions.SubscriptionTable).ConfigureAwait(false);
-                _logger.LogFormattedMessage("Added Subscription Activity Update to storage");
-            }
-            _logger.LogFormattedMessage($"Completed updating the follower Subscription for the selected channels to {subscriptionStatus}");
-            return true;
+            // TODO: UPDATE THE UpdateFollowerSubscription METHOD TO USE EVENTSUB INSTEAD OF THE OLD WAY
+            return await Task.FromResult(true);
         }
 
         public async Task<bool> UpdateStreamChangeSubscription(IEnumerable<string> channels, SubscriptionStatus subscriptionStatus)
         {
-            _logger.LogFormattedMessage($"Updating the Stream Subscription for the selected channels to {subscriptionStatus}");
-            foreach (var channel in channels)
-            {
-                _logger.LogFormattedMessage($"Starting the stream subscription for {channel}");
-                var selected = TwitchUsers?.FirstOrDefault(user => string.Equals(channel, user.LoginName, StringComparison.InvariantCultureIgnoreCase));
-
-                var request = new TwitchWebhookRequest
-                {
-                    Callback = string.Format(_twitchOptions.StreamChangeCallbackTemplate, _httpContextAccessor.HttpContext.Request.Host.Value, channel),
-                    Mode = subscriptionStatus.ToString().ToLower(),
-                    Topic = string.Format(_twitchOptions.StreamChangeTopicTemplate, selected.Id),
-                    Lease = _twitchOptions.DefaultLease
-                };
-
-                _logger.LogFormattedMessage($"Updating the stream subscription for {request}");
-                var responseCode = await _twitchHttpClient.UpdateSubscription(request).ConfigureAwait(false);
-                if (responseCode != HttpStatusCode.Accepted)
-                {
-                    _logger.LogWarning($"Unable to successfully subscribe to stream events for {request}");
-                    return false;
-                }
-                selected.IsStreamSubscribed = subscriptionStatus == SubscriptionStatus.Subscribed;
-
-                _logger.LogFormattedMessage($"Updated the stream subscription successfully for {request}");
-
-                _logger.LogFormattedMessage("Adding Subscription Activity Update to storage");
-                var entity = new SubscriptionActivityEntity
-                {
-                    PartitionKey = channel,
-                    RowKey = DateTime.UtcNow.ToRowKeyString(),
-                    Activity = "StreamSubscription",
-                    State = subscriptionStatus.ToString()
-                };
-                var result = await _storageService.AddDataToStorage(entity, _tableStorageOptions.SubscriptionTable).ConfigureAwait(false);
-                _logger.LogFormattedMessage("Added Subscription Activity Update to storage");
-            }
-            _logger.LogFormattedMessage($"Completed updating the Stream Subscription for the selected channels to {subscriptionStatus}");
-            return true;
+            // TODO: UPDATE THE UpdateFollowerSubscription METHOD TO USE EVENTSUB INSTEAD OF THE OLD WAY
+            return await Task.FromResult(true);
         }
 
         public async Task LoadChannelData(string channel = null)
@@ -162,7 +82,7 @@ namespace TwitchChatBot.Client.Services
                     channels = _twitchOptions.Channels;
                     _logger.LogFormattedMessage("Completed getting channels from Config settings");
                 }
-                
+
                 /*
                 foreach(var entry in channels)
                 {
@@ -182,7 +102,7 @@ namespace TwitchChatBot.Client.Services
             _logger.LogFormattedMessage("Getting channel data from Twitch");
             TwitchUsers.AddRange(await _twitchHttpClient.GetTwitchChannels(channels).ConfigureAwait(false));
 
-            var ids = TwitchUsers.Where(x => string.Equals(channel,x.LoginName, StringComparison.InvariantCultureIgnoreCase)).Select(x => x.Id);
+            var ids = TwitchUsers.Where(x => string.Equals(channel, x.LoginName, StringComparison.InvariantCultureIgnoreCase)).Select(x => x.Id);
             await GetCurrentSubscriptions(ids);
             _logger.LogFormattedMessage("Completed logging channel data from Twitch");
         }
@@ -200,6 +120,41 @@ namespace TwitchChatBot.Client.Services
                     user.IsFollowSubscribed = (entry.Value & TwitchSubscriptionStatus.FollowerSubscription) == TwitchSubscriptionStatus.FollowerSubscription;
                 }
             }
+        }
+
+        public Task LoadMonitoredChannels()
+        {
+            _logger.LogInformation("Getting list of monitored channels");
+            if (MonitoredChannels != null && MonitoredChannels.Count > 0)
+            {
+                _logger.LogInformation("MonitoredChannels already has a value");
+            }
+            else
+            {
+                // TODO: Get this list of channels correctly;
+                // Get channels from Config
+                // Get Channels from Storage.
+                // Union with Config channels.
+                // Verify that channels are still valid Twitch channels,
+                // then return the final resultset
+
+                MonitoredChannels = _twitchOptions.Channels;
+                _logger.LogInformation("MonitoredChannels has been set to a list of channels");
+            }
+            return Task.FromResult(MonitoredChannels);
+        }
+
+        public  async Task SubscribeToChannelEvents()
+        {
+            if (MonitoredChannels == null)
+            {
+                await LoadMonitoredChannels();
+            }
+            
+            // Subscribe to ban/unban events
+
+
+            var isSuccessful = await _twitchHttpClient.SubscribeToChannelEvents(MonitoredChannels);
         }
 
         // TODO: Create a GetSubscriptionData method from Twitch that can be used on the Channel component

@@ -1,14 +1,14 @@
 using Blazored.Modal;
+using IdentityModel.Client;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
+using TwitchChatBot.Client.Filters;
 using TwitchChatBot.Client.Hubs;
 using TwitchChatBot.Client.Models.Options;
 using TwitchChatBot.Client.Services;
@@ -60,9 +60,29 @@ namespace TwitchChatBot.Client
             services.Configure<TableStorageOptions>(Configuration.GetSection("TableStorage"));
             services.Configure<BotOptions>(Configuration.GetSection("Bot"));
 
+            // Adds IdentityModel for TokenManagement
             // Adds a Twitch HttpClient
-            services.AddHttpClient<TwitchHttpClient>();
+            services.AddAccessTokenManagement(opts =>
+            {
+                // TODO: Bind the scope to the Oauth:Scopes options
+                opts.Client.Clients.Add("twitch", new ClientCredentialsTokenRequest
+                {
+                    Address = Configuration["OAuth:TokenUrl"],
+                    ClientId = Configuration["OAuth:ClientId"],
+                    ClientSecret = Configuration["OAuth:ClientSecret"],
+                    GrantType = "client_credentials",
+                    //Scope = "channel:read:subscriptions&user:manage:blocked_users&user:read:blocked_users&user:read:follows&chat:edit&chat:read"
+                    Scope="user:read:email"
+                });
+            });
+            services.AddHttpClient<TwitchHttpClient>(opts =>
+            {
+                opts.BaseAddress = new System.Uri(Configuration["Twitch:Urls:ApiUrl"]);
+                opts.DefaultRequestHeaders.Add("Client-ID", Configuration["OAuth:ClientId"]);
+            }).AddClientAccessTokenHandler(tokenClientName: "twitch");
             services.AddHttpContextAccessor();
+
+            
 
             // The following line enables Application Insights telemetry collection.
             //services.AddApplicationInsightsTelemetry(Configuration);
@@ -70,6 +90,12 @@ namespace TwitchChatBot.Client
             // Add Telerik blazor
             //services.AddTelerikBlazor();
             services.AddBlazoredModal();
+
+            // Add TwitchSubscriptionService
+            services.AddHostedService<TwitchSubscriptionService>();
+            
+            // Add TwitchWebhookRequestFilter
+            services.AddScoped<TwitchRequestFilter>();
 
         }
 

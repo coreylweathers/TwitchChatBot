@@ -150,6 +150,9 @@ namespace TwitchChatBot.CLI
             _twitchClient.OnExistingUsersDetected += async (s, e) => await Client_OnExistingUsersDetected(s, e);
 
             _twitchClient.Connect();
+            
+            // TODO: Remove this as this is only for debug purposes
+            _twitchClient.JoinChannel("cldubya");
 
             await Task.CompletedTask;
         }
