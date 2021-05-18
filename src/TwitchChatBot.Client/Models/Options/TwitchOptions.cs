@@ -17,5 +17,7 @@ namespace TwitchChatBot.Client.Models.Options
         public string EventSubscriptionUrl { get; set; }
         public string UserUrl { get; set; }
         public string WebhookSubscriptionUrl { get; set; }
+        public string SubscriptionUrl { get; set; }
+        public string BannedUsersUrl { get; set; }
     }
 }

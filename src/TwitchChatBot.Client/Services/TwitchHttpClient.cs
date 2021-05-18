@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using TwitchChatBot.Client.Models.Options;
 using TwitchChatBot.Client.Models.Twitch;
 using TwitchChatBot.Client.Models.Twitch.Enums;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace TwitchChatBot.Client.Services
 {
@@ -40,7 +41,7 @@ namespace TwitchChatBot.Client.Services
         {
             if (channelLogins == null || channelLogins.Count == 0)
             {
-                await Task.FromException(new ArgumentException("Can't get Twitch channel data: Twitch Channels list is null or empty", nameof(channelLogins)));
+                await Task.FromException(new ArgumentException("Can't get Twitch broadcasterId data: Twitch Channels list is null or empty", nameof(channelLogins)));
             }
 
             if (string.IsNullOrEmpty(_twitchMonitor.CurrentValue.Urls.UserUrl))
@@ -66,18 +67,14 @@ namespace TwitchChatBot.Client.Services
         {
             
             // Get the JSON Response array and cache it locally
-            var uriBuilder = new UriBuilder(new Uri(_twitchMonitor.CurrentValue.Urls.WebhookSubscriptionUrl))
-            {
-                Query = "first=100"
-            };
-            var response = await _httpClient.GetAsync(uriBuilder.Uri);
+            var response = await _httpClient.GetAsync($"{_twitchMonitor.CurrentValue.Urls.SubscriptionUrl}?broadcaster_id={channelIds.FirstOrDefault()}");
             response.EnsureSuccessStatusCode();
 
             // TODO: Replace Json.NET with System.Text.Json
             var json = JObject.Parse(await response.Content.ReadAsStringAsync());
 
             var subscriptions = JsonConvert.DeserializeObject<List<TwitchWebhookSubscriptionResponse>>(json["data"].ToString());
-            // Using the TwitchUser list, match the userId to the channel login name
+            // Using the TwitchUser list, match the userId to the broadcasterId login name
             // Check which topics are subscribed for that user ID if any
             // Return an enum that is the union of each topic
             var resultDictionary = new Dictionary<string, TwitchSubscriptionStatus>();
@@ -135,6 +132,18 @@ namespace TwitchChatBot.Client.Services
             }
 
             return true;
+        }
+
+
+        public async Task<TwitchBanResponse> GetBannedUsers(string broadcasterId)
+        {
+            var response = await _httpClient.GetAsync($"{_twitchMonitor.CurrentValue.Urls.BannedUsersUrl}?=broadcaster_id={broadcasterId}");
+            response.EnsureSuccessStatusCode();
+
+            var data = JsonSerializer.Deserialize<TwitchBanResponse>(await response.Content.ReadAsStringAsync());
+
+            // TODO: Parse out the list of banned users from the data object
+            return data;
         }
     }
 }

@@ -4,19 +4,19 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
 using TwitchChatBot.Client.Extensions;
 using TwitchChatBot.Client.Models;
 using TwitchChatBot.Client.Models.Options;
 using TwitchChatBot.Client.Models.Twitch;
 using TwitchChatBot.Client.Models.Twitch.Enums;
-using TwitchChatBot.Shared.Models.Entities;
 
 namespace TwitchChatBot.Client.Services
 {
     public class TwitchService : ITwitchService
     {
+        
+
         public List<TwitchUser> TwitchUsers { get; set; }
         public string UserAccessToken { get; set; }
         public string AppAccessToken { get; set; }
@@ -39,6 +39,26 @@ namespace TwitchChatBot.Client.Services
             _logger = logger;
         }
 
+        public async Task<List<string>> GetBannedList(List<string> channels)
+        {
+            if (channels.Count == 0)
+            {
+                return null;
+            }
+
+            // Call Twitch and get the list of banned us
+            foreach (var channel in channels)
+            {
+                await LoadChannelData(channel);
+
+                var user = TwitchUsers.FirstOrDefault(result =>
+                    string.Equals(result.LoginName, channel, StringComparison.CurrentCultureIgnoreCase));
+                var response = await _twitchHttpClient.GetBannedUsers(user.Id);
+            }
+
+            return null;
+        }
+
         public async Task<bool> UpdateFollowerSubscription(IEnumerable<string> channels, SubscriptionStatus subscriptionStatus)
         {
             // TODO: UPDATE THE UpdateFollowerSubscription METHOD TO USE EVENTSUB INSTEAD OF THE OLD WAY
@@ -59,12 +79,6 @@ namespace TwitchChatBot.Client.Services
                 TwitchUsers = new List<TwitchUser>();
             }
 
-            // TODO: REFACTOR THIS IF CONDITION OUT
-            if (!string.IsNullOrEmpty(channel) && TwitchUsers.Any(x => string.Equals(x.LoginName, channel, StringComparison.InvariantCultureIgnoreCase)))
-            {
-                await Task.CompletedTask;
-            }
-
             List<string> channels;
 
             if (!string.IsNullOrEmpty(channel))
@@ -82,15 +96,6 @@ namespace TwitchChatBot.Client.Services
                     channels = _twitchOptions.Channels;
                     _logger.LogFormattedMessage("Completed getting channels from Config settings");
                 }
-
-                /*
-                foreach(var entry in channels)
-                {
-                    if (!TwitchUsers.Any(x => string.Equals(x.LoginName, entry, StringComparison.InvariantCultureIgnoreCase)))
-                    {
-                        TwitchUsers.Clear();
-                    }
-                }*/
 
                 if (TwitchUsers.Count > 0)
                 {
@@ -144,7 +149,7 @@ namespace TwitchChatBot.Client.Services
             return Task.FromResult(MonitoredChannels);
         }
 
-        public  async Task SubscribeToChannelEvents()
+        public async Task SubscribeToChannelEvents()
         {
             if (MonitoredChannels == null)
             {

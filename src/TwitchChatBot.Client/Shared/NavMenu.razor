@@ -7,28 +7,26 @@
 
 <div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
     <ul class="nav flex-column">
+        <li class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <span class="oi oi-home" aria-hidden="true"></span> Home
+            </NavLink>
+        </li>
         <AuthorizeView>
-            <NotAuthorized>
-                <li class="nav-item px-3">
-                    <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                        <span class="oi oi-home" aria-hidden="true"></span> Home
-                    </NavLink>
-                </li>
-            </NotAuthorized>
             <Authorized>
                 <li class="nav-item px-3">
-                    <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                        <span class="oi oi-home" aria-hidden="true"></span> Home
-                    </NavLink>
-                </li>
-                <li class="nav-item px-3">
-                    <NavLink class="nav-link" href="channels_1">
+                    <NavLink class="nav-link" href="channels">
                         <span class="oi oi-list-rich" aria-hidden="true"></span> Channels
                     </NavLink>
                 </li>
                 <li class="nav-item px-3">
-                    <NavLink class="nav-link" href="bot">
-                        <span class="oi oi-person" aria-hidden="true"></span> Bot
+                    <NavLink class="nav-link" href="viewers">
+                        <span class="oi oi-person" aria-hidden="true"></span> Viewers
+                    </NavLink>
+                </li>                                      
+                <li class="nav-item px-3">
+                    <NavLink class="nav-link" href="settings">
+                        <span class="oi oi-cog" aria-hidden="true"></span> Settings
                     </NavLink>
                 </li>
             </Authorized>
@@ -45,4 +43,5 @@
     {
         collapseNavMenu = !collapseNavMenu;
     }
+
 }

@@ -7,8 +7,10 @@ namespace TwitchChatBot.Client.Services
 {
     public interface ITwitchService
     {
+        // TODO: Delete the gray code because it's not being used
         string UserAccessToken { get; set; }
         string AppAccessToken { get; set; }
+        Task<List<string>> GetBannedList(List<string> channels);
         List<TwitchUser> TwitchUsers { get; set; }
         List<string> MonitoredChannels { get; set; }
 

@@ -72,7 +72,7 @@ namespace TwitchChatBot.Client
                     ClientSecret = Configuration["OAuth:ClientSecret"],
                     GrantType = "client_credentials",
                     //Scope = "channel:read:subscriptions&user:manage:blocked_users&user:read:blocked_users&user:read:follows&chat:edit&chat:read"
-                    Scope="user:read:email"
+                    Scope= "user:read:email moderation:read channel:read:subscriptions"
                 });
             });
             services.AddHttpClient<TwitchHttpClient>(opts =>
