@@ -433,6 +433,7 @@ $RECYCLE.BIN/
 !.vscode/extensions.json
 
 # Modified files for our project
+**/*.http
 
 # For nested .vscode folders
 *.vscode
