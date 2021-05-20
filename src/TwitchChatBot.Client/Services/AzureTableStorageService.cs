@@ -17,6 +17,7 @@ namespace TwitchChatBot.Client.Services
         private readonly ILogger<AzureTableStorageService> _logger;
         private readonly CloudTableClient _tableClient;
 
+        // TODO: Double check Azure table config settings to ensure that connection strings/table properties are accurately set within Azure
         public AzureTableStorageService(IOptionsMonitor<TableStorageOptions> optionsMonitor, ILogger<AzureTableStorageService> logger)
         {
             _tableStorageOptions = optionsMonitor.CurrentValue;

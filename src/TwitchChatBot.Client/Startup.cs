@@ -75,7 +75,7 @@ namespace TwitchChatBot.Client
                     Scope= "user:read:email moderation:read channel:read:subscriptions"
                 });
             });
-            services.AddHttpClient<TwitchHttpClient>(opts =>
+            services.AddHttpClient<ITwitchHttpClient, TwitchHttpClient>(opts =>
             {
                 opts.BaseAddress = new System.Uri(Configuration["Twitch:Urls:ApiUrl"]);
                 opts.DefaultRequestHeaders.Add("Client-ID", Configuration["OAuth:ClientId"]);

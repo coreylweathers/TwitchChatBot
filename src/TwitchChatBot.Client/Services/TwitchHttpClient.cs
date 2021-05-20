@@ -16,7 +16,7 @@ using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace TwitchChatBot.Client.Services
 {
-    public class TwitchHttpClient
+    public class TwitchHttpClient : ITwitchHttpClient
     {
         private readonly HttpClient _httpClient;
         private readonly IOptionsMonitor<TwitchOptions> _twitchMonitor;

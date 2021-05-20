@@ -22,14 +22,14 @@ namespace TwitchChatBot.Client.Services
         public string AppAccessToken { get; set; }
         public List<string> MonitoredChannels { get; set; }
 
-        private readonly TwitchHttpClient _twitchHttpClient;
+        private readonly ITwitchHttpClient _twitchHttpClient;
         private readonly TwitchOptions _twitchOptions;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ILogger<TwitchService> _logger;
         private readonly IStorageService _storageService;
         private readonly TableStorageOptions _tableStorageOptions;
 
-        public TwitchService(IOptionsMonitor<TwitchOptions> twitchOptions, IOptionsMonitor<TableStorageOptions> tableStorageOptions, IHttpContextAccessor httpContextAccessor, TwitchHttpClient twitchHttpClient, IStorageService storageService, ILogger<TwitchService> logger)
+        public TwitchService(IOptionsMonitor<TwitchOptions> twitchOptions, IOptionsMonitor<TableStorageOptions> tableStorageOptions, IHttpContextAccessor httpContextAccessor, ITwitchHttpClient twitchHttpClient, IStorageService storageService, ILogger<TwitchService> logger)
         {
             _twitchOptions = twitchOptions.CurrentValue;
             _tableStorageOptions = tableStorageOptions.CurrentValue;
